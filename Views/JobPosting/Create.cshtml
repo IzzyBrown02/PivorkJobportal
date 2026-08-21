@@ -1,0 +1,41 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model PivorkJobportal.Domain.JobPosting
+
+@{
+    ViewData["Title"] = "Neue Stellenanzeige erstellen";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Neue Stellenanzeige schalten</h3>
+                </div>
+                <div class="card-body">
+
+                    <form asp-controller="JobPosting" asp-action="Create" method="post">
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="JobTitle" class="form-label">Berufstitel / Position</label>
+                            <input asp-for="JobTitle" class="form-control" placeholder="z.B. Fullstack .NET Entwickler (m/w/d)" />
+                            <span asp-validation-for="JobTitle" class="text-danger"></span>
+                        </div>
+
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-neutral-secondary btn-outline-secondary">Abbrechen</a>
+                            <button type="submit" class="btn btn-success">Job veröffentlichen</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

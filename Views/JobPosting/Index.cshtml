@@ -1,0 +1,41 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model IEnumerable<PivorkJobportal.Domain.JobPosting>
+
+@{
+    ViewData["Titel"] = "Alle Jobanzeigen";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Offene Stellenanzeigen</h1>
+
+        <a asp-controller="JobPosting" asp-action="Create" class="btn btn-success">
+            + Neues Inserat anlegen
+        </a>
+    </div>
+
+    <div class="row">
+        @if (!Model.Any())
+        {
+                <div class="col-12">
+                    <div class="alert alert-info">Aktuell sind keine Jobs ausgeschrieben.</div>
+                </div>
+        }
+        else
+        {
+            @foreach (var job in Model)
+            {
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@job.JobTitle</h5>
+                                    </div>
+                            </div>
+                        </div>
+            }
+        }
+    </div>
+</div>

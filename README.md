@@ -1,4 +1,4 @@
-# pivrok – Web-Jobportal
+# Pivork – Web-Jobportal
 
 > 🚧 **Status:** In aktiver Entwicklung (Work in Progress)
 

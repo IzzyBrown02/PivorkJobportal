@@ -1,0 +1,74 @@
+﻿@*
+    Datei:          Views/Auth/Register.cshtml
+    Zweck:          Schritt 2B des Authentifizierungsflusses.
+                    Neuregistrierung von Benutzern mit Zuweisung der jeweiligen Identity-Rolle.
+    Model:          PivorkJobportal.Models.RegisterViewModel
+    Besonderheit:   Legt den User in ASP.NET Core Identity an und weist über
+                    UserManager.AddToRoleAsync die Rolle "Jobseeker" oder "Recruiter" zu.
+*@
+
+@model PivorkJobportal.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registrierung - Jobportal";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header @(Model.IsRecruiter ? "bg-primary" : "bg-success") text-white">
+                    <h3 class="mb-0"> @(Model.IsRecruiter ? "Arbeitgeber-Konto erstellen" : "Konto als Bewerber erstellen")</h3>
+                </div>
+                <div class="card-body">
+                    <p>Registrierung für: <strong> @Model.Email</strong> <a asp-action="Identify" asp-route-isRecruiter="@Model.IsRecruiter" class="btn btn-link btn-sm">(Ändern)</a></p>
+
+                    <form asp-controller="Auth" asp-action="Register" method="post">
+                        <input type="hidden" asp-for="Email" />
+                        <input type="hidden" asp-for="IsRecruiter" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"> </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Firstname" class="form-label"> Vorname</label>
+                            <input asp-for="Firstname" class="form-control" placeholder="z.B. Max" />
+                            <span asp-validation-for="Firstname" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Lastname" class="form-label"> Nachname</label>
+                            <input asp-for="Lastname" class="form-control" placeholder="z.B. Mustermann" />
+                            <span asp-validation-for="Lastname" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"> E-Mail-Adresse</label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="z.B. max@beispiel.de" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"> Passwort</label>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Passwort eingeben" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label"> Passwort bestätigen</label>
+                            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Passwort wiederholen" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn @(Model.IsRecruiter ? "btn-primary" : "btn-success") w-100" > Konto erstellen & Einloggen</button>
+                        
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PivorkJobportal.Domain;
 using PivorkJobportal.Infrastructure.Identity;
@@ -10,15 +11,14 @@ namespace PivorkJobportal.Infrastructure
     /// Erbt von IdentityDbContext, um die Tabellen für das Microsoft Identity-Sicherheitssystem 
     /// (Benutzerverwaltung, Rollen, Logins) automatisch bereitzustellen.
     /// </summary>
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
         /// <summary>
         /// Initialisiert eine neue Instanz des Kontextes und gibt die Verbindungseinstellungen 
         /// (z.B. den MSSQL Connection String) an die Basisklasse von Entity Framework Core weiter.
         /// </summary>
         /// <param name="options">Die Konfigurationseinstellungen für den Kontext.</param>
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 

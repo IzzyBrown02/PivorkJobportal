@@ -1,5 +1,11 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+    Datei:         Views/JobPosting/Index.cshtml
+    Zweck:         Arbeitgeber-Dashboard / Übersichtsseite für Recruiter.
+                   Zeigt alle vom aktuell eingeloggten Recruiter erstellten Stellenanzeigen
+                   mit Verwaltungsmöglichkeiten (Bearbeiten, Löschen, Status ändern).
+    Model:         TBD (z. B. IEnumerable oder RecruiterDashboardViewModel)
+    Besonderheit:  Zugriff nur für authentifizierte Benutzer mit der Rolle "Recruiter".
+                   Enthält primären Action-Button "Neues Inserat anlegen" -> Create.
 *@
 
 @model IEnumerable<PivorkJobportal.Domain.JobPosting>
@@ -12,7 +18,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Offene Stellenanzeigen</h1>
 
-        <a asp-controller="JobPosting" asp-action="Create" class="btn btn-success">
+        <a asp-controller="JobPosting" asp-action="Create" class="btn btn-primary">
             + Neues Inserat anlegen
         </a>
     </div>

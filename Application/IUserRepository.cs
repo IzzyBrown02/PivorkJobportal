@@ -20,6 +20,6 @@ namespace PivorkJobportal.Application
         /// Speichert einen neuen Benutzer bei der Registrierung oder aktualisiert ein bestehendes 
         /// Profil asynchron (z. B. beim Upgrade vom Jobseeker zum Recruiter).
         /// </summary>
-        Task SaveAsync(User user);
+        Task SaveAsync(User user, string password);
     }
 }

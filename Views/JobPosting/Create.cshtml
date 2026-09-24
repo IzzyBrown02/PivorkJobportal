@@ -1,5 +1,12 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+   Datei:         Views/JobPosting/Create.cshtml
+   Zweck:         Eingabeformular zum Erstellen einer neuen Stellenanzeige.
+                  Erfasst Objektdaten wie Titel, Beschreibung, Standort, Gehalt
+                  und Anforderungsprofil.
+   Model:         CreateJobPostingViewModel
+   Besonderheit:  Validiert Formulardaten sowohl clientseitig via ValidationScriptsPartial
+                  als auch serverseitig. Verknüpft das neue Inserat automatisch mit der
+                  Identity-ID des aktuell angemeldeten Recruiters.
 *@
 
 @model PivorkJobportal.Domain.JobPosting
@@ -30,7 +37,7 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <a asp-action="Index" class="btn btn-neutral-secondary btn-outline-secondary">Abbrechen</a>
-                            <button type="submit" class="btn btn-success">Job veröffentlichen</button>
+                            <button type="submit" class="btn btn-primary">Job veröffentlichen</button>
                         </div>
                     </form>
 
@@ -39,3 +46,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}

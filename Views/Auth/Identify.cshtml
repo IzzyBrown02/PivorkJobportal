@@ -1,0 +1,61 @@
+﻿@*
+    Datei:      Views/Auth/Identify.cshtml 
+    Zweck:      Schritt 1 des Email-First Authentifizierungsflusses.
+                Fragt die E-Mail-Adresse ab und leitet dynamisch zu Login (bestehender User)
+                oder Register (neuer User) weiter.
+    Model:      PivorkJobportal.Models.IdentifyViewModel
+    Parameter:  IsRecruiter (bool) - Steuert den visuellen Kontext und die Zielgruppe
+                (Bewerber [bg-success] vs. Recruiter [bg-primary]).
+*@
+
+@model PivorkJobportal.Models.IdentifyViewModel
+
+@{
+    ViewData["Title"] = Model.IsRecruiter ? "Arbeitgeber Login" : "Anmelden / Registrieren";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header @(Model.IsRecruiter ? "bg-primary" : "bg-success") text-white">
+                    <h3 class="mb-0"> @(Model.IsRecruiter ? "Willkommen im Arbeitgeber-Portal" : "Willkommen bei Pivork")</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted"> Gib deine E-Mail-Adresse ein, um dich anzumelden oder ein neues Konto zu erstellen.</p>
+
+                    <form asp-controller="Auth" asp-action="Identify" method="post">
+                        <input type="hidden" asp-for="IsRecruiter" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"> E-Mail-Adresse</label>
+                            <input asp-for="Email" class="form-control" placeholder="z.B. max@beispiel.de" autofocus />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn @(Model.IsRecruiter ? "btn-primary" : "btn-success") w-100"> Weiter</button>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center">
+@if (Model.IsRecruiter)
+{
+    <a asp-action = "Identify" asp - route - isRecruiter = "false" class="text-decoration-none"> Du suchst nach Jobs? Hier als Bewerber anmelden</a>
+            }
+            else
+            {
+                <a asp-action="Identify" asp-route-isRecruiter="true" class="text-decoration-none fw-bold"> Du bist Recruiter? Hier als Arbeitgeber anmelden</a>
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -2,7 +2,7 @@
 
 namespace PivorkJobportal.Infrastructure.Identity
 {
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUser : IdentityUser<Guid>
     {
         public string? Title { get; set; }
         public string Firstname { get; set; } = default!;

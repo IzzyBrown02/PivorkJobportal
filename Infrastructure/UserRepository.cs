@@ -2,6 +2,8 @@
 using PivorkJobportal.Application;
 using PivorkJobportal.Domain;
 using PivorkJobportal.Infrastructure.Identity;
+using System.Collections.Generic;
+using System.Data;
 
 namespace PivorkJobportal.Infrastructure
 {
@@ -14,39 +16,47 @@ namespace PivorkJobportal.Infrastructure
             _userManager = userManager;
         }
 
-        // 1. Aus der Identity-Welt in deine saubere Domain-Welt übersetzen
+        // 1. Aus der Identity-Welt in saubere Domain-Welt übersetzen
         public async Task<User?> GetByEmailAsync(string email)
         {
             var identityUser = await _userManager.FindByEmailAsync(email);
             if (identityUser == null) return null;
 
             var roles = await _userManager.GetRolesAsync(identityUser);
-            // Enum parsen (z.B. "Recruiter" -> UserRole.Recruiter)
-            Enum.TryParse(roles.FirstOrDefault(), out UserRole domainRole);
+
+            // Alle Strings in Domain-Enums umwandeln und der Liste hinzufügen
+            var domainRoles = new List<UserRole>();
+
+            foreach (var roleStr in roles)
+            {
+                if (Enum.TryParse<UserRole>(roleStr, out var parsedRole))
+                {
+                    domainRoles.Add(parsedRole);
+                }
+            }
 
             return new User
             {
-                Id = Guid.Parse(identityUser.Id), // Identity nutzt Strings für IDs
+                Id = identityUser.Id,
                 Email = identityUser.Email!,
                 Firstname = identityUser.Firstname,
                 Lastname = identityUser.Lastname,
                 Title = identityUser.Title,
-                Role = domainRole
-                // Passwort wird hier NICHT zurückgemappt (Sicherheit!)
+                Roles = domainRoles
             };
         }
 
         // 2. Aus der Domain-Welt in die Identity-Datenbank speichern
-        public async Task SaveAsync(User domainUser)
+        public async Task SaveAsync(User domainUser, string password)
         {
             var identityUser = await _userManager.FindByEmailAsync(domainUser.Email);
 
             if (identityUser == null)
             {
-                // NEUREGISTRIERUNG: IdentityUser erstellen
+                // NEUREGISTRIERUNG
                 identityUser = new ApplicationUser
                 {
-                    Id = domainUser.Id.ToString(),
+                    Id = domainUser.Id,
                     UserName = domainUser.Email,
                     Email = domainUser.Email,
                     Title = domainUser.Title,
@@ -56,12 +66,14 @@ namespace PivorkJobportal.Infrastructure
                 };
 
                 // Identity kümmert sich HIER automatisch um das sichere Hashen des Passworts!
-                var result = await _userManager.CreateAsync(identityUser, domainUser.Password);
+                var result = await _userManager.CreateAsync(identityUser, password);
 
                 if (result.Succeeded)
                 {
-                    // Rolle zuweisen (z.B. "Recruiter")
-                    await _userManager.AddToRoleAsync(identityUser, domainUser.Role.ToString());
+                    foreach (var role in domainUser.Roles)
+                    {
+                        await _userManager.AddToRoleAsync(identityUser, domainUser.Roles.ToString());
+                    }
                 }
             }
             else
@@ -70,14 +82,18 @@ namespace PivorkJobportal.Infrastructure
                 identityUser.Title = domainUser.Title;
                 identityUser.Firstname = domainUser.Firstname;
                 identityUser.Lastname = domainUser.Lastname;
-                
+
 
                 await _userManager.UpdateAsync(identityUser);
 
-                // Rollen-Update falls nötig...
+                // Rollen aktualisieren
                 var currentRoles = await _userManager.GetRolesAsync(identityUser);
                 await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-                await _userManager.AddToRoleAsync(identityUser, domainUser.Role.ToString());
+
+                foreach (var role in domainUser.Roles)
+                {
+                    await _userManager.AddToRoleAsync(identityUser, role.ToString());
+                }
             }
         }
     }

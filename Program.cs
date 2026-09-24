@@ -4,12 +4,13 @@ using PivorkJobportal.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using PivorkJobportal.Models;
 using PivorkJobportal.Infrastructure.Identity;
+using PivorkJobportal.Domain;
 
 namespace PivorkJobportal
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -24,11 +25,11 @@ namespace PivorkJobportal
                 options.UseSqlServer(connectionString));
 
             // =========================================================================
-            // NEU: ASP.NET Core Identity Dienste registrieren
+            // ASP.NET Core Identity Dienste registrieren
             // =========================================================================
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
             {
-                // Passwort-Regeln für die Entwicklung entspannen
+                // Passwort-Regeln für die Entwicklung einfach gehalten
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 6;
                 options.Password.RequireNonAlphanumeric = false;
@@ -68,7 +69,26 @@ namespace PivorkJobportal
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            app.Run();
+            // =========================================================================
+            // Rollen aus dem Enum(UserRole) beim Starten in der Datenbank sicherstellen
+            // =========================================================================
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+                // Greift direkt auf Enum zu
+                var roleNames = Enum.GetNames(typeof(UserRole)); // Passe "UserRole" an den Namen des Enums an
+
+                foreach (var roleName in roleNames)
+                {
+                    if (!await roleManager.RoleExistsAsync(roleName))
+                    {
+                        await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+                    }
+                }
+            }
+
+            await app.RunAsync();
         }
     }
 }

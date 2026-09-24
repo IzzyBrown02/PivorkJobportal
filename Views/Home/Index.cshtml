@@ -1,8 +1,161 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@*
+    Datei:         Views/Home/Index.cshtml
+    Zweck:         Öffentliche Startseite des Jobportals (Bewerber-Kontext).
+                   Präsentation von aktuellen Stellenanzeigen inklusive Such- und
+                   Filterfunktionen (z. B. nach Stichwort, Standort oder Kategorie).
+    Model:         TBD (z. B. IEnumerable oder HomeIndexViewModel)
+    Besonderheit:  Dient als Haupteinstiegspunkt für Jobsuchende. Erfordert keine
+                   Authentifizierung für die reine Ansicht und Suche.
+*@
+
+@{
+    ViewData["Title"] = "Startseite";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-4">
+    <div class="row g-4 mb-2"> 
+
+        <!-- Linke Spalte: Brand-Story & Beschreibung -->
+        <div class="col-lg-6">
+            <div class="p-4 bg-light rounded shadow-sm border-start border-success border-4 h-100">
+                <h2 class="h4 text-success fw-bold mb-3"> Pivork – aus Pivot und Work.</h2>
+                <h3 class="h5 fw-bold mb-3"> Dein Job, deine Wendung.</h3>
+            
+                <p class="text-secondary lh-lg">
+                    Manchmal reicht ein einziger Moment, um alles zu verändern – ein neuer Job,
+                        eine neue Richtung, ein neuer Anfang. Genau das ist <em>Pivot</em> : die bewusste
+                        Wendung hin zu dem, was wirklich zu dir passt.
+                </p>
+                <p class="text-secondary lh-lg">
+                    Bei Pivork bringen wir diesen Moment mit deiner Arbeit zusammen. Wir helfen 
+                    dir nicht nur, einen Job zu finden – wir helfen dir, die richtige Wendung in 
+                    deiner Karriere zu nehmen.
+                </p>
+                <p class="fw-bold text-dark fs-5 mt-4">
+                    Bereit für deinen Pivot? Dann ist hier dein Chance.
+                </p>
+                <div class="mt-3">
+                    <a class="btn btn-success btn-lg w-100 fw-bold shadow-sm py-3 text-wrap rounded-3" asp-controller="Auth" asp-action="Identify">
+                        Pivork. Die Wendung, die dich weiterbringt. Melde dich jetzt an
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rechte Spalte: Stellenanzeigen Such- & Filterformular -->
+        <div class="col-lg-6">
+            <div class="card border-success shadow-sm rounded-4">
+                <div class="card-header bg-success text-white fw-bold py-3 rounded-top-4">
+                    <i class="bi bi-search me-2"> Stellenanzeigen suchen</i>
+                </div>
+                <div class="card-body p-4 bg-light rounded-bottom-4">
+                    <form asp-controller="Home" asp-action="Index" method="get">
+                    
+                        <!-- 1. Jobtitel / Ungefährer Suchbegriff -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark"> Jobtitel / Suchbegriff</label>
+                            <input type="text" name="searchQuery" class="form-control border-success-subtle" placeholder="z. B. C# Entwickler, Pflegekraft..." />
+                        </div>
+
+                        <!-- 2. Startdatum (Startmonat / Startjahr) -->
+                        <div class="row g-2 mb-3">
+                            <label class="form-label fw-bold text-dark m-0"> Gewünschtes Startdatum</label>
+                            <div class="col-6">
+                                <select name="startMonth" class="form-select border-success-subtle">
+                                    <option value=""> Monat wählen...</option>
+                                    @for (int m = 1; m <= 12; m++)
+                                    {
+                                        <option value="@m"> @System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <select name="startYear" class="form-select border-success-subtle">
+                                    <option value=""> Jahr wählen...</option>
+                                    @for (int y = DateTime.Now.Year; y <= DateTime.Now.Year + 2; y++)
+                                    {
+                                        <option value="@y"> @y</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 3. Arbeitsort (IsHomeOffice, IsHybrid, IsOnSite) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark d-block"> Arbeitsort</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="isHomeOffice" value="true" id="cbHomeOffice" />
+                                <label class="form-check-label" for="cbHomeOffice"> Homeoffice</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="isHybrid" value="true" id="cbHybrid" />
+                                <label class="form-check-label" for="cbHybrid"> Hybrid</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="isOnSite" value="true" id="cbOnSite" />
+                                <label class="form-check-label" for="cbOnSite"> Vor Ort</label>
+                            </div>
+                        </div>
+
+                        <!-- 4. Anstellungsart (FullTime, PartTime, Minijob, Freelance, Internship) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark d-block"> Anstellungsart</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isFullTime" value="true" id="cbFullTime" />
+                                        <label class="form-check-label" for="cbFullTime"> Vollzeit</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isPartTime" value="true" id="cbPartTime" />
+                                        <label class="form-check-label" for="cbPartTime"> Teilzeit</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isMinijob" value="true" id="cbMinijob" />
+                                        <label class="form-check-label" for="cbMinijob"> Minijob</label>
+                                    </div>
+                                </div>
+                                <div class="col-6"]>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isFreelance" value="true" id="cbFreelance" />
+                                        <label class="form-check-label" for="cbFreelance"> Freelance</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isInternship" value="true" id="cbInternship" />
+                                        <label class="form-check-label" for="cbInternship"> Praktikum</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Gehaltsangaben (SalaryMin, SalaryMax, SalaryUnit) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark"> Gehaltsspanne (€)</label>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input type="number" step="100" name="salaryMin" class="form-control border-success-subtle" placeholder="ab Gehalt" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" step="100" name="salaryMax" class="form-control border-success-subtle" placeholder="bis Gehalt" />
+                                </div>
+                            </div>
+                            <select name="salaryUnit" class="form-select border-success-subtle">
+                                <option value=""> Abrechnungszeitraum wählen...</option>
+                                <option value="Hourly"> Stündlich</option>
+                                <option value="Monthly"> Monatlich</option>
+                                <option value="Yearly"> Jährlich</option>
+                            </select>
+                        </div>
+
+                        <!-- Suchen Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success fw-bold py-2 rounded-3 shadow-sm">
+                                <i class="bi bi-search me-1"></i> Jobs suchen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

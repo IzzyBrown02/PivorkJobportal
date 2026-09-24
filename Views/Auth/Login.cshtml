@@ -1,0 +1,53 @@
+﻿@*
+    Datei:          Views/Auth/Login.cshtml
+    Zweck:          Schritt 2A des Authentifizierungsflusses.
+                    Passwort-Eingabe für bereits registrierte Benutzer mit vordefinierter E-Mail.
+    Model:          PivorkJobportal.Models.LoginViewModel
+    Besonderheit:   Nach erfolgreichem Login erfolgt eine rollenbasierte Weiterleitung
+                    (Bewerber -> Home/Index | Recruiter -> JobPosting/Index).
+*@
+
+@model PivorkJobportal.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Passwort eingeben";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header @(Model.IsRecruiter ? "bg-primary" : "bg-success") text-white">
+                    <h3 class="mb-0"> Willkommen zurück!</h3>
+                </div>
+                <div class="card-body">
+                    <p>Anmeldung für: <strong>@Model.Email</strong> <a asp-action="Identify" asp-route-isRecruiter="@Model.IsRecruiter" class="btn btn-link btn-sm"> (Ändern)</a> </p>
+
+                    <form asp-controller="Auth" asp-action="Login" method="post">
+                        <input type="hidden" asp-for="Email" />
+                        <input type="hidden" asp-for="IsRecruiter" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"> Passwort</label>
+                            <input asp-for="Password" class="form-control" type="password" autofocus />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label"> Angemeldet bleiben</label>
+                        </div>
+
+                        <button type="submit" class="btn @(Model.IsRecruiter ? "btn-primary" : "btn-success") w-100"> Einloggen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

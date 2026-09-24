@@ -4,14 +4,25 @@ namespace PivorkJobportal.Models
 {
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Bitte gib deinen Vornamen an.")]
-        public string Firstname { get; set; } = default!;
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Bitte gib deinen Nachnamen an.")]
-        public string Lastname { get; set; } = default!;
+        [Required(ErrorMessage = "Vorname ist erforderlich.")]
+        public string Firstname { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "E-Mail ist ein Pflichtfeld.")]
-        [EmailAddress(ErrorMessage = "Ungültige E-Mail-Adresse.")]
-        public string Email { get; set; } = default!;
+        [Required(ErrorMessage = "Nachname ist erforderlich.")]
+        public string Lastname { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Passwort ist erforderlich.")]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = string.Empty;
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Passwort bestätigen")]
+        [Compare("Password", ErrorMessage = "Die Passwörter stimmen nicht überein.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        public bool IsRecruiter { get; set; } = false;
     }
 }

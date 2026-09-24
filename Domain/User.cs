@@ -1,4 +1,6 @@
-﻿namespace PivorkJobportal.Domain
+﻿using System.Collections.Generic;
+
+namespace PivorkJobportal.Domain
 {
     /// <summary>
     /// [Domain-Schicht] Repräsentiert die zentralen Benutzerdaten.
@@ -10,14 +12,13 @@
         public string? Title { get; set; }
         public string Firstname { get; set; } = default!;
         public string Lastname { get; set; } = default!;
-
         public string Email { get; set; } = default!;
-        public string Password { get; set; } = default!;
 
         /// <summary>
-        /// Steuert die Rechte und die UI-Ansicht (Admin, Recruiter, Jobseeker).
+        /// Steuert die Rechte und die UI-Ansicht (Admin, Recruiter, Jobseeker). 
+        /// Eine Liste, damit ein User mehrere Rollen gleichzeitig haben kann.
         /// </summary>
-        public UserRole Role { get; set; }
+        public List<UserRole>  Roles { get; set; } = new();
 
-}
+    }
 }

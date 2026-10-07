@@ -17,6 +17,18 @@ namespace PivorkJobportal.Application
         Task<User?> GetByEmailAsync(string email);
 
         /// <summary>
+        /// Sucht einen Benutzer asynchron anhand seiner eindeutigen ID (z. B. für Detailansichten im Admin-Bereich).
+        /// </summary>
+        /// <param name="id">Die eindeutige GUID des Benutzers.</param>
+        Task<User?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// Holt alle Benutzer, die eine bestimmte Domänen-Rolle (z. B. Recruiter oder Jobseeker) besitzen.
+        /// </summary>
+        /// <param name="role">Die gesuchte Domänen-Rolle.</param>
+        Task<List<User>> GetUsersByRoleAsync(UserRole role);
+
+        /// <summary>
         /// Speichert einen neuen Benutzer bei der Registrierung oder aktualisiert ein bestehendes 
         /// Profil asynchron (z. B. beim Upgrade vom Jobseeker zum Recruiter).
         /// </summary>

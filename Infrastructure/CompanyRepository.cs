@@ -1,4 +1,5 @@
-﻿using PivorkJobportal.Application;
+﻿using Microsoft.EntityFrameworkCore;
+using PivorkJobportal.Application;
 using PivorkJobportal.Domain;
 
 namespace PivorkJobportal.Infrastructure
@@ -20,31 +21,70 @@ namespace PivorkJobportal.Infrastructure
             _context = context;
         }
 
-        public CompanyProfile? GetById(int companyId)
+        public async Task<CompanyProfile?> GetByIdAsync(int companyId)
         {
-            return _context.CompanyProfiles.FirstOrDefault(c => c.Id == companyId);
+            return await _context.CompanyProfiles
+                .Include(c => c.Recruiters)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
         }
 
-        public List<CompanyProfile> GetByOwnerId(string ownerId)
+        public async Task<List<CompanyProfile>> GetCompaniesForRecruiterAsync(Guid recruiterUserId)
         {
-            // Sucht alle Firmenprofile, bei denen die OwnerId mit dem aktuellen User übereinstimmt
-            return _context.CompanyProfiles
-                           .Where(c => c.OwnerId == ownerId)
-                           .ToList();
+            return await _context.CompanyRecruiters
+                .Where(cr => cr.UserId == recruiterUserId && cr.IsApprovedByCompany)
+                .Select(cr => cr.CompanyProfile)
+                .ToListAsync();
         }
 
-        public void Save(CompanyProfile profile)
+        public async Task<bool> IsRecruiterForCompanyAsync(Guid recruiterUserId, int companyProfileId)
         {
-            var exists = _context.CompanyProfiles.Any(c => c.Id == profile.Id);
-            if (!exists)
+            return await _context.CompanyRecruiters
+                .AnyAsync(cr => cr.UserId == recruiterUserId
+                        && cr.CompanyProfileId == companyProfileId
+                        && cr.IsApprovedByCompany);
+        }
+
+        public async Task SaveAsync(CompanyProfile profile)
+        {
+            if (profile.Id == 0)
             {
-                _context.CompanyProfiles.Add(profile);
+               await _context.CompanyProfiles.AddAsync(profile);
             }
             else
             {
                 _context.CompanyProfiles.Update(profile);
             }
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+        }
+
+        // 1. Alle noch unbestätigten Firmen abrufen
+        public async Task<List<CompanyProfile>> GetUnverifiedCompaniesAsync()
+        {
+            return await _context.CompanyProfiles
+                .Include(c => c.Recruiters)
+                .Where(c => !c.IsVerified)
+                .ToListAsync();
+        }
+
+        // 2. Firma verifizieren und verknüpfte Recruiter freischalten
+        public async Task ApproveCompanyAsync(int companyId)
+        {
+            var company = await _context.CompanyProfiles
+                .Include(c => c.Recruiters)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+
+            if (company != null)
+            {
+                company.IsVerified = true;
+
+                // Alle Recruiter dieser Firma freischalten
+                foreach (var recruiter in company.Recruiters)
+                {
+                    recruiter.IsApprovedByCompany = true;
+                }
+
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

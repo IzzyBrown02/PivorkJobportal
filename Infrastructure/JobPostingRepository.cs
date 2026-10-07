@@ -18,36 +18,44 @@ namespace PivorkJobportal.Infrastructure
         /// <param name="context">Der per Dependency Injection bereitgestellte Datenbankkontext.</param>
         public JobPostingRepository(ApplicationDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public JobPosting? GetById(int id)
+        public async Task<JobPosting?> GetByIdAsync(int id)
         {
-            return _context.JobPostings.Find(id);
+            return await _context.JobPostings.FindAsync(id);
         }
 
-        public IEnumerable<JobPosting> GetAll()
+        public async Task<List<JobPosting>> GetAllAsync()
         {
-            return _context.JobPostings.AsNoTracking().ToList();
+            return await _context.JobPostings.AsNoTracking().ToListAsync();
         }
 
-        public IEnumerable<JobPosting> GetPublicJobs()
+        public async Task<List<JobPosting>> GetPublicJobsAsync()
         {
-            return _context.JobPostings
+            return await _context.JobPostings
                 .AsNoTracking()
                 .Include(j => j.CompanyProfile) // Lädt die Firma zum Job dazu
                 .Where(j => j.CompanyProfile != null && j.CompanyProfile.IsVerified) 
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Save(JobPosting job)
+        public async Task<List<JobPosting>> GetJobsByOwnerAsync(Guid ownerId)
+        {
+            return await _context.JobPostings
+                .Include(j => j.CompanyProfile)
+                .Where(j => j.OwnerId == ownerId)
+                .ToListAsync();
+        }
+
+        public async Task SaveAsync(JobPosting job)
         {
             // schaut in der Datenbank (j) nach, ob es einen Job mit dieser ID bereits gibt
             var exists = _context.JobPostings.Any(j => j.Id == job.Id);
 
             if (!exists)
             {
-                _context.JobPostings.Add(job);
+                await _context.JobPostings.AddAsync(job);
             }
             else
             {
@@ -55,7 +63,16 @@ namespace PivorkJobportal.Infrastructure
             }
 
             // schreibt die Daten live in die MSSQL-Datenbank.
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteAsync(int id)
+        {
+            var job = await _context.JobPostings.FindAsync(id);
+            if (job != null)
+            {
+                _context.JobPostings.Remove(job);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

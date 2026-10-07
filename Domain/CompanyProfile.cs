@@ -10,9 +10,6 @@
     {
         public int Id { get; set; }
 
-        // Verbindung zum Identity-User
-        public string OwnerId { get; set; } = default!;
-
         // Wenn eine Firma neu angelegt wird, ist das automatisch immer 'false'!
         public bool IsVerified { get; set; } = false;
 
@@ -33,6 +30,9 @@
 
         // Branchenlogo: später auswählbar beim Inserat erstellen
         public int? DefaultLogoId { get; set; }
+
+        // Navigation zur M:N-Tabelle: So kann ein Recruiter für viele Unternehmen oder anders herum inserate erstellen
+        public ICollection<CompanyRecruiter> Recruiters { get; set; } = new List<CompanyRecruiter>();
 
         // Navigation Property: EF Core weiß dadurch, dass eine Firma viele Jobs haben kann
         public ICollection<JobPosting> JobPostings { get; set; } = new List<JobPosting>();

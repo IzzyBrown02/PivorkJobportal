@@ -10,16 +10,19 @@ namespace PivorkJobportal.Domain
     public class JobPosting
     {
         public int Id { get; set; }
-        public string JobTitle { get; set; } = default!;
-        public string? JobDescription { get; set; }
-        public DateTime? JobStart { get; set; }
+
+        // Der Recruiter, der die Stelle konkret angelegt hat (Verbindung zu Identity-User)
+        public Guid OwnerId { get; set; }
+        public User? Owner { get; set; }
 
         // --- DIE VERBINDUNG zum Unternehmen (Fremdschlüssel) ---
         public int CompanyProfileId { get; set; }
         public CompanyProfile CompanyProfile { get; set; } = default!;
 
-        // "MyJobs"-Ansicht des Recruiters / Multi-Recruiter-Logik
-        public string OwnerId { get; set; } = string.Empty;
+
+        public string JobTitle { get; set; } = default!;
+        public string? JobDescription { get; set; }
+        public DateTime? JobStart { get; set; }
 
         // --- ORTSANGABE 2: Arbeitsort (falls Abweichungen zum Hauptsitz) ---
         public string? JobPostalCode { get; set; }
@@ -47,6 +50,9 @@ namespace PivorkJobportal.Domain
         [Column(TypeName = "decimal(18, 2)")]
         public decimal? SalaryMax { get; set; } // Bis-Gehalt (optional)
         public SalaryUnit? SalaryUnit { get; set; }
+
+        // --- erstellter Datumangabe ---
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
 }

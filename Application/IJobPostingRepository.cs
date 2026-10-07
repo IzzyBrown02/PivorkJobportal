@@ -16,12 +16,12 @@ namespace PivorkJobportal.Application
         /// Das gefundene <see cref="JobPosting"/> oder <c>null</c>, 
         /// wenn keine Stellenanzeige mit dieser ID existiert.
         /// </returns>
-        JobPosting? GetById(int id);
+        Task<JobPosting?> GetByIdAsync(int id);
 
         /// <summary>
-        /// Holt alle im System registrierten Stellenanzeigen für die Startseite.
+        /// Sucht eine Stellenanzeige anhand ihrer ID.
         /// </summary>
-        IEnumerable<JobPosting> GetAll();
+        Task<List<JobPosting>> GetAllAsync();
 
         /// <summary>
         /// Ruft alle verifizierten und öffentlich sichtbaren Stellenanzeigen ab.
@@ -33,12 +33,24 @@ namespace PivorkJobportal.Application
         /// um ungesichtete oder betrügerische Anzeigen zu verbergen.
         /// </remarks>
         /// <returns>Eine Liste von <see cref="JobPosting"/>-Objekten, deren Firmen aktiv freigeschaltet sind.</returns>
-        IEnumerable<JobPosting> GetPublicJobs();
+        Task<List<JobPosting>> GetPublicJobsAsync();
+
+        /// <summary>
+        /// Holt alle Stellenanzeigen, die von einem bestimmten Recruiter erstellt wurden.
+        /// </summary>
+        /// <param name="ownerId">Die Identity UserId (Guid) des Recruiters.</param>
+        Task<List<JobPosting>> GetJobsByOwnerAsync(Guid ownerId);
 
         /// <summary>
         /// Speichert eine neue Stellenanzeige oder aktualisiert eine bestehende.
         /// </summary>
         /// <param name="job">Das zu speichernde oder zu aktualisierende <see cref="JobPosting"/>-Objekt.</param>
-        void Save(JobPosting job);
+        Task SaveAsync(JobPosting job);
+
+        /// <summary>
+        /// Löscht eine Stellenanzeige anhand ihrer ID.
+        /// </summary>
+        /// <param name="id">Die ID der zu löschenden Stellenanzeige.</param>
+        Task DeleteAsync(int id);
     }
 }

@@ -32,26 +32,28 @@ namespace PivorkJobportal.Controllers
             _companyRepository = companyRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // Nur die verifizierten Jobs !
-            var publicJobs = _jobPostingRepository.GetPublicJobs();
+            var publicJobs = await _jobPostingRepository.GetPublicJobsAsync();
             return View(publicJobs);
         }
 
         // 1. GET: Zeigt dem Benutzer das leere Formular mit dem Firmen-Dropdown an
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             // Identity-Trick: schneller die ID des aktuell eingeloggten Recruiters holen
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId))
+            var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserIdStr))
             {
                 return Challenge(); // Schickt den User zum Login, falls er nicht eingeloggt ist
             }
 
-            // Wir holen alle Firmen, die diesem Recruiter gehören
-            var userCompanies = _companyRepository.GetByOwnerId(currentUserId);
+            var currentUserId = Guid.Parse(currentUserIdStr);
+
+            // Firmen abrufen, bei denen der Recruiter zugeordnet und freigegeben ist
+            var userCompanies = await _companyRepository.GetCompaniesForRecruiterAsync(currentUserId);
 
             // Wir bauen das leere ViewModel und befüllen die Dropdown-Liste
             var model = new CreateJobPostingViewModel
@@ -69,19 +71,24 @@ namespace PivorkJobportal.Controllers
         // 2. POST: Nimmt die Daten aus dem Formular entgegen und speichert sie
         [HttpPost]
         [ValidateAntiForgeryToken] // Schützt die App vor Cross-Site-Request-Forgery-Angriffen (Hacker-Schutz)
-        public IActionResult Create(CreateJobPostingViewModel model)
+        public async Task<IActionResult> Create(CreateJobPostingViewModel model)
         {
             // 1. Die ID des aktuell eingeloggten Recruiters auslesen
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId)) return Challenge();
+            var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserIdStr)) return Challenge();
+
+            var currentUserId = Guid.Parse(currentUserIdStr);
 
             // Sicherheits-Check & Datenbeschaffung: Wir laden das ausgewählte Firmenprofil
-            var companyProfile = _companyRepository.GetById(model.CompanyProfileId);
+            var companyProfile = await _companyRepository.GetByIdAsync(model.CompanyProfileId);
 
-            // Validierung: Existiert die Firma und gehört sie auch wirklich dem aktuellen User?
-            if (companyProfile == null || companyProfile.OwnerId != currentUserId)
+            // Neu: Prfün, ob die Firma existiert UND ob der Recruiter für diese Firma berechtigt ist
+            bool isAuthorizedRecruiter = companyProfile != null &&
+                await _companyRepository.IsRecruiterForCompanyAsync(currentUserId, companyProfile.Id);
+
+            if (!isAuthorizedRecruiter)
             {
-                ModelState.AddModelError("CompanyProfileId", "Ungültige Firma ausgewählt.");
+                ModelState.AddModelError("CompanyProfileId", "Ungültige oder nicht berechtigte Firma ausgewählt.");
             }
 
             // Falls das Formular Fehler hat (z.B. Pflichtfeld fehlt)
@@ -91,10 +98,10 @@ namespace PivorkJobportal.Controllers
                 var newJob = new JobPosting
                 {
                     OwnerId = currentUserId!,
+                    CompanyProfileId = model.CompanyProfileId, // Fremdschlüssel setzen!
                     JobTitle = model.JobTitle,
                     JobDescription = model.JobDescription,
-                    CompanyProfileId = model.CompanyProfileId, // Fremdschlüssel setzen!
-
+                   
                     // Anstellungsart
                     IsOnSite = model.IsOnSite,
                     IsHomeOffice = model.IsHomeOffice,
@@ -120,7 +127,7 @@ namespace PivorkJobportal.Controllers
                     JobCountry = string.IsNullOrWhiteSpace(model.JobCountry) ? companyProfile?.Country : model.JobCountry
                 };
 
-                _jobPostingRepository.Save(newJob);
+                await _jobPostingRepository.SaveAsync(newJob);
 
                 // Alles super -> Weiterleitung zur Übersicht
                 return RedirectToAction("Index");
@@ -136,7 +143,7 @@ namespace PivorkJobportal.Controllers
             * Dropdown-Auswahlliste (AvailableCompanies) zwingend frisch aus der Datenbank
             * nachgeladen und dem ViewModel wieder zugewiesen werden.
             * -------------------------------------------------------------------------------- */
-            var userCompanies = _companyRepository.GetByOwnerId(currentUserId);
+            var userCompanies = await _companyRepository.GetCompaniesForRecruiterAsync(currentUserId);
             model.AvailableCompanies = userCompanies.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),

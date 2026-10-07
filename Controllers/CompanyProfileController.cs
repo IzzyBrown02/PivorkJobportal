@@ -18,11 +18,17 @@ namespace PivorkJobportal.Controllers
             _companyRepository = companyRepository;
         }
 
-        public IActionResult MyCompanies()
+        public async Task<IActionResult> MyCompanies()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var companies = _companyRepository.GetByOwnerId(userId);
-            return View(companies);
+            var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            if (string.IsNullOrEmpty(currentUserIdStr))
+            {
+                return Challenge();
+            }
+
+            var currentUserId = Guid.Parse(currentUserIdStr);
+            var myCompanies = await _companyRepository.GetCompaniesForRecruiterAsync(currentUserId);
+            return View(myCompanies);
         }
 
         [HttpGet]
@@ -30,11 +36,11 @@ namespace PivorkJobportal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CompanyProfileViewModel model)
+        public async Task<IActionResult> Create(CompanyProfileViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
                 var domainProfile = new CompanyProfile
                 {
@@ -45,13 +51,21 @@ namespace PivorkJobportal.Controllers
                     PostalCode = model.PostalCode,
                     City = model.City,
                     Country = model.Country,
-                    OwnerId = userId,
-
+                    
                     // EXPLIZIT: Neue Firmen müssen erst vom Admin geprüft werden!
                     IsVerified = false
                 };
 
-                _companyRepository.Save(domainProfile);
+                // Verknüpfung in der M:N-Tabelle anlegen
+                domainProfile.Recruiters.Add(new CompanyRecruiter
+                {
+                    UserId = userId,
+                    IsCompanyAdmin = true,        // Der Ersteller wird Firmen-Admin
+                    IsApprovedByCompany = true,   // Eigenne Freigabe ist direkt gültig
+                    JoinedAt = DateTime.UtcNow
+                });
+
+                await _companyRepository.SaveAsync(domainProfile);
                 return RedirectToAction(nameof(MyCompanies));
             }
 
